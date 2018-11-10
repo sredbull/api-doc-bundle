@@ -6,12 +6,10 @@
     <services>
         <!-- Controllers -->
         <service id="sredbull_api_doc.controller.swagger_ui" class="SRedbull\ApiDocBundle\Controller\SwaggerUiController" public="true">
-            <argument type="service" id="sredbull_api_doc.generator_locator" />
             <argument type="service" id="twig" />
         </service>
 
         <service id="sredbull_api_doc.controller.swagger" class="SRedbull\ApiDocBundle\Controller\DocumentationController" public="true">
-            <argument type="service" id="sredbull_api_doc.generator_locator" />
         </service>
     </services>
 

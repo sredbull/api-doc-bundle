@@ -5,8 +5,8 @@
         xsi:schemaLocation="http://symfony.com/schema/routing
         http://symfony.com/schema/routing/routing-1.0.xsd">
 
-    <route id="nelmio_api_doc.swagger_ui" path="/" methods="GET">
-        <default key="_controller">nelmio_api_doc.controller.swagger_ui</default>
+    <route id="srdebull_api_doc.swagger_ui" path="/" methods="GET">
+        <default key="_controller">srdebull_api_doc.controller.swagger_ui</default>
     </route>
 
 </routes>

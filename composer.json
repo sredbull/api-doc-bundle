@@ -12,8 +12,10 @@
   ],
   "require": {
     "php": "^7.0",
+    "symfony/asset": "^4.1.7",
     "symfony/framework-bundle": "^4.1.7",
     "symfony/property-info": "^4.1.7",
+    "symfony/twig-bundle": "^4.1.7",
     "zircote/swagger-php": "^3.0.1"
   },
   "require-dev": {

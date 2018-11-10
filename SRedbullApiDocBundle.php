@@ -11,8 +11,6 @@
 
 namespace SRedbull\ApiDocBundle;
 
-use SRedbull\ApiDocBundle\DependencyInjection\Compiler\ConfigurationPass;
-use SRedbull\ApiDocBundle\DependencyInjection\Compiler\TagDescribersPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -23,7 +21,5 @@ final class SRedbullApiDocBundle extends Bundle
      */
     public function build(ContainerBuilder $container)
     {
-        $container->addCompilerPass(new ConfigurationPass());
-        $container->addCompilerPass(new TagDescribersPass());
     }
 }

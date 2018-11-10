@@ -36,7 +36,7 @@ final class SRedbullApiDocExtension extends Extension implements PrependExtensio
         $config = $this->processConfiguration(new Configuration(), $configs);
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
 
-        $loader->load('services.yaml');
+        $loader->load('services.xml');
     }
 
 }
