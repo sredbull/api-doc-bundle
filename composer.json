@@ -1,0 +1,30 @@
+{
+  "name": "sredbull/api-doc-bundle",
+  "description": "Generates documentation for your REST API from annotations",
+  "keywords": ["api", "documentation", "doc", "open api"],
+  "type": "symfony-bundle",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Sven Roodbol",
+      "homepage": "https://www.housearatus.space"
+    }
+  ],
+  "require": {
+    "php": "^7.0",
+    "symfony/framework-bundle": "^4.1.7",
+    "symfony/property-info": "^4.1.7",
+    "zircote/swagger-php": "^3.0.1"
+  },
+  "require-dev": {
+  },
+  "suggest": {
+  },
+  "autoload": {
+    "psr-4": {
+      "SRedbull\\ApiDocBundle\\": ""
+    }
+  },
+  "extra": {
+  }
+}
