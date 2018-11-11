@@ -1,0 +1,16 @@
+services:
+  sredbull_api_doc.controller.swagger_ui:
+    class: SRedbull\ApiDocBundle\Controller\SwaggerUiController
+    arguments: ['@kernel', '@twig']
+    public: true
+
+  sredbull_api_doc.controller.swagger:
+    class: SRedbull\ApiDocBundle\Controller\DocumentationController
+    public: true
+
+  sredbull_api_doc.command.open_api_doc:
+    class: SRedbull\ApiDocBundle\Command\OpenApiCommand
+    arguments: ['@kernel']
+    public: true
+    tags:
+      - { name: 'console.command', command: 'oa:generate' }
