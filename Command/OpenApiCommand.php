@@ -82,7 +82,7 @@ class OpenApiCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        $openApi = \OpenApi\scan($this->kernel->getRootDir());
+        $openApi = \OpenApi\scan([$this->kernel->getRootDir(), $this->kernel->locateResource('@SRedbullApiDocBundle')]);
         $format = $input->getOption('format');
 
         if (\in_array($format, self::$allowedFormats, true) === false) {

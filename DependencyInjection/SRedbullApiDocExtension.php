@@ -12,27 +12,29 @@ namespace SRedbull\ApiDocBundle\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
-final class SRedbullApiDocExtension extends Extension implements PrependExtensionInterface
+/**
+ * Class SRedbullApiDocExtension.
+ */
+final class SRedbullApiDocExtension extends Extension
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function prepend(ContainerBuilder $container)
-    {
-        $container->prependExtensionConfig('framework', ['property_info' => ['enabled' => true]]);
-        $bundles = $container->getParameter('kernel.bundles');
-    }
 
     /**
-     * {@inheritdoc}
+     * Load all parameters and services related to this extension.
+     *
+     * @param array            $configs   The configs.
+     * @param ContainerBuilder $container The container.
+     *
+     * @throws \Exception When something fails loading the services.
+     *
+     * @return void
      */
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $config = $this->processConfiguration(new Configuration(), $configs);
+
         $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
 
         $loader->load('services.yaml');
