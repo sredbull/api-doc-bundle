@@ -10,11 +10,8 @@
  */
 namespace SRedbull\ApiDocBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\BufferedOutput;
+use SRedbull\ApiDocBundle\Service\OpenApiService;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\KernelInterface;
 
 /**
  * Class DocumentationController.
@@ -25,20 +22,20 @@ final class DocumentationController
 {
 
     /**
-     * The kernel interface.
+     * The Open Api service.
      *
-     * @var KernelInterface
+     * @var OpenApiService $openApiService
      */
-    private $kernel;
+    private $openApiService;
 
     /**
      * SwaggerUiController constructor.
      *
-     * @param KernelInterface $kernel The kernel interface.
+     * @param OpenApiService $openApiService The Open Api service.
      */
-    public function __construct(KernelInterface $kernel)
+    public function __construct(OpenApiService $openApiService)
     {
-        $this->kernel = $kernel;
+        $this->openApiService = $openApiService;
     }
 
     /**
@@ -50,20 +47,7 @@ final class DocumentationController
      */
     public function __invoke(): JsonResponse
     {
-        $application = new Application($this->kernel);
-        $application->setAutoExit(false);
-
-        $input = new ArrayInput(array(
-            'command' => 'oa:generate',
-        ));
-
-        $output = new BufferedOutput();
-        $application->run($input, $output);
-
-        // @todo We should validate/cache the spec.
-        $spec = \json_decode($output->fetch());
-
-        return new JsonResponse($spec);
+        return new JsonResponse($this->openApiService->getSpec());
     }
 
 }

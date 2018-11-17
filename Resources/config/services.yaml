@@ -1,14 +1,20 @@
 services:
-  sredbull_api_doc.controller.swagger_ui:
+  s_redbull_api_doc.service.open_api_service:
+    class: SRedbull\ApiDocBundle\Service\OpenApiService
+    arguments: ['@kernel']
+    public: true
+
+  s_redbull_api_doc.controller.swagger_ui_controller:
     class: SRedbull\ApiDocBundle\Controller\SwaggerUiController
-    arguments: ['@kernel', '@twig']
+    arguments: ['@s_redbull_api_doc.service.open_api_service', '@twig']
     public: true
 
-  sredbull_api_doc.controller.swagger:
+  s_redbull_api_doc.controller.documentation_controller:
     class: SRedbull\ApiDocBundle\Controller\DocumentationController
+    arguments: ['@s_redbull_api_doc.service.open_api_service']
     public: true
 
-  sredbull_api_doc.command.open_api_doc:
+  s_redbull_api_doc.command.open_api_command:
     class: SRedbull\ApiDocBundle\Command\OpenApiCommand
     arguments: ['@kernel']
     public: true

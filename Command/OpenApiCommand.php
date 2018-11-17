@@ -10,11 +10,14 @@
  */
 namespace SRedbull\ApiDocBundle\Command;
 
+use OpenApi\Analysis;
+use SRedbull\ApiDocBundle\OpenApi\VariableProcessor;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Yaml\Yaml;
 
 /**
  * Class OpenApiCommand
@@ -82,7 +85,20 @@ class OpenApiCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): void
     {
-        $openApi = \OpenApi\scan([$this->kernel->getRootDir(), $this->kernel->locateResource('@SRedbullApiDocBundle')]);
+        $variables = Yaml::parseFile($this->kernel->getRootDir() . '/../config/packages/s_redbull_api_doc.yaml');
+        $processors = Analysis::processors();
+        $processors[] = new VariableProcessor($variables['s_redbull_api_doc']['documentation']);
+
+        $openApi = \OpenApi\scan(
+            [
+                $this->kernel->getRootDir(),
+                $this->kernel->locateResource('@SRedbullApiDocBundle'),
+            ],
+            [
+                'processors' => $processors,
+            ]
+        );
+
         $format = $input->getOption('format');
 
         if (\in_array($format, self::$allowedFormats, true) === false) {

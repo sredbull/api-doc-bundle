@@ -10,17 +10,12 @@
  */
 namespace SRedbull\ApiDocBundle\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Console\Application;
-use Symfony\Component\Console\Input\ArrayInput;
-use Symfony\Component\Console\Output\BufferedOutput;
+use SRedbull\ApiDocBundle\Service\OpenApiService;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\KernelInterface;
 use Twig_Environment;
 
 /**
  * Class SwaggerUiController.
- *
- * @todo invoke logic to service.
  */
 final class SwaggerUiController
 {
@@ -33,21 +28,21 @@ final class SwaggerUiController
     private $twig;
 
     /**
-     * The kernel interface.
+     * The Open Api service.
      *
-     * @var KernelInterface
+     * @var OpenApiService $openApiService
      */
-    private $kernel;
+    private $openApiService;
 
     /**
      * SwaggerUiController constructor.
      *
-     * @param KernelInterface  $kernel The kernel interface.
-     * @param Twig_Environment $twig   The twig environment.
+     * @param OpenApiService   $openApiService The Open Api service.
+     * @param Twig_Environment $twig           The twig environment.
      */
-    public function __construct(KernelInterface $kernel, Twig_Environment $twig)
+    public function __construct(OpenApiService $openApiService, Twig_Environment $twig)
     {
-        $this->kernel = $kernel;
+        $this->openApiService = $openApiService;
         $this->twig = $twig;
     }
 
@@ -63,21 +58,8 @@ final class SwaggerUiController
      */
     public function __invoke(): Response
     {
-        $application = new Application($this->kernel);
-        $application->setAutoExit(false);
-
-        $input = new ArrayInput(array(
-            'command' => 'oa:generate',
-        ));
-
-        $output = new BufferedOutput();
-        $application->run($input, $output);
-
-        // @todo We should validate/cache the spec.
-        $spec = \json_decode($output->fetch());
-
         return new Response(
-            $this->twig->render('@SRedbullApiDoc/SwaggerUi/index.html.twig', ['swagger_data' => ['spec' => $spec]]),
+            $this->twig->render('@SRedbullApiDoc/SwaggerUi/index.html.twig', ['swagger_data' => ['spec' => $this->openApiService->getSpec()]]),
             Response::HTTP_OK,
             ['Content-Type' => 'text/html']
         );
