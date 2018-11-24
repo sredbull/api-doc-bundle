@@ -1,12 +1,12 @@
 services:
   s_redbull_api_doc.service.open_api_service:
     class: SRedbull\ApiDocBundle\Service\OpenApiService
-    arguments: ['@kernel']
+    arguments: ['@kernel', '@s_redbull_api_doc.describer.route_describer']
     public: true
 
   s_redbull_api_doc.controller.swagger_ui_controller:
     class: SRedbull\ApiDocBundle\Controller\SwaggerUiController
-    arguments: ['@s_redbull_api_doc.service.open_api_service', '@twig']
+    arguments: ['@kernel', '@s_redbull_api_doc.service.open_api_service', '@twig', '@s_redbull_api_doc.describer.route_describer']
     public: true
 
   s_redbull_api_doc.controller.documentation_controller:
@@ -20,3 +20,8 @@ services:
     public: true
     tags:
       - { name: 'console.command', command: 'oa:generate' }
+
+  s_redbull_api_doc.describer.route_describer:
+    class: SRedbull\ApiDocBundle\Describer\RouteDescriber
+    arguments: ['@router']
+    public: true

@@ -16,10 +16,6 @@ html, body {
   background: #efefef
 }
 
-.swagger-ui .scheme-container {
-  display: none;
-}
-
 .swagger-ui .wrapper {
   width: 100%;
   max-width: 1460px;

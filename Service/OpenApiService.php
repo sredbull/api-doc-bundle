@@ -10,11 +10,13 @@
  */
 namespace SRedbull\ApiDocBundle\Service;
 
+use SRedbull\ApiDocBundle\Describer\RouteDescriber;
 use SRedbull\ApiDocBundle\OpenApi\Exception\InvalidOpenApiSpecificationException;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Routing\RouterInterface;
 
 /**
  * Class OpenApiService
@@ -30,23 +32,32 @@ class OpenApiService
     private $kernel;
 
     /**
-     * SwaggerUiController constructor.
+     * The route describer.
      *
-     * @param KernelInterface $kernel The kernel interface.
+     * @var RouteDescriber $routeDescriber
      */
-    public function __construct(KernelInterface $kernel)
+    private $routeDescriber;
+
+    /**
+     * OpenApiService constructor.
+     *
+     * @param KernelInterface $kernel         The kernel interface.
+     * @param RouteDescriber  $routeDescriber The route describer.
+     */
+    public function __construct(KernelInterface $kernel, RouteDescriber $routeDescriber)
     {
         $this->kernel = $kernel;
+        $this->routeDescriber = $routeDescriber;
     }
 
     /**
      * Get the Open Api specification.
      *
-     * @return \stdClass
+     * @return array
      *
      * @throws InvalidOpenApiSpecificationException When the Open Api specification is invalid.
      */
-    public function getSpec(): \stdClass
+    public function getSpec(): array
     {
         $application = new Application($this->kernel);
         $application->setAutoExit(false);
@@ -58,13 +69,16 @@ class OpenApiService
 
         $output = new BufferedOutput();
 
-        try {
+         try {
             $application->run($input, $output);
+
+            $oas = \json_decode($output->fetch(), true);
+            $oas = $this->routeDescriber->describe($oas);
+
+            return $oas;
         } catch (\Throwable $exception) {
             throw new InvalidOpenApiSpecificationException($exception->getMessage());
         }
-
-        return \json_decode($output->fetch());
     }
 
 }
