@@ -25,8 +25,14 @@ use Symfony\Component\Routing\RouterInterface;
 class RouteDescriber
 {
 
+    /**
+     * Default exception code.
+     */
     private const DEFAULT_EXCEPTION_CODE = 500;
 
+    /**
+     * Default response type.
+     */
     private const DEFAULT_RESPONSE_TYPE = 'application/json';
 
     /**
@@ -95,9 +101,9 @@ class RouteDescriber
                 continue;
             }
 
-            if ($this->getController($route) !== 'App\Controller\RecruitmentController') {
-                continue;
-            }
+//            if ($this->getController($route) !== 'App\Controller\RecruitmentController') {
+//                continue;
+//            }
 
             $docBlock = $this->getRouteDocBlock($route);
             $routeDetails = $this->getRouteDetails($docBlock);
@@ -108,7 +114,7 @@ class RouteDescriber
                         'description' => $routeDetails['description'],
                         'summary' => $routeDetails['summary'],
                         'operationId' => $this->getMethod($route),
-                        'parameters' => $this->getRouteParameters($route, $docBlock, $httpMethod),
+                        'parameters' => $this->getRouteParameters($route, $docBlock),
                         'responses' => $this->getResponses($route),
                     ],
                 ];
@@ -137,7 +143,6 @@ class RouteDescriber
     {
         return $this->getRouter()->getRouteCollection();
     }
-
 
     /**
      * Check if the route should be ignored.
@@ -203,7 +208,6 @@ class RouteDescriber
         return explode('::', $route->getDefault('_controller'))[1];
     }
 
-
     /**
      * Get the route doc block.
      *
@@ -223,7 +227,6 @@ class RouteDescriber
         return $docBlockFactory->create($reflectionMethod, $contextFactory);
     }
 
-
     /**
      * Get the description and summary.
      *
@@ -239,7 +242,18 @@ class RouteDescriber
         ];
     }
 
-    private function getRouteParameters(Route $route, DocBlock $docBlock, string $httpMethod)
+
+    /**
+     * Get the route parameters.
+     *
+     * @param Route    $route    The route.
+     * @param DocBlock $docBlock The doc block.
+     *
+     * @return array
+     *
+     * @throws \ReflectionException When the route class could not be reflected.
+     */
+    private function getRouteParameters(Route $route, DocBlock $docBlock): array
     {
         $pathParameters = $this->getPathParameters($route->getPath());
         $parameterDetails = $this->getParameterDetails($docBlock);
@@ -263,13 +277,27 @@ class RouteDescriber
         return $parameters;
     }
 
+    /**
+     * Get the path parameters.
+     *
+     * @param string $path The path.
+     *
+     * @return array
+     */
     private function getPathParameters(string $path): array
     {
-        preg_match_all("/\{([^}]+)\}/", $path, $routeParams);
+        preg_match_all('/\{([^}]+)\}/', $path, $routeParams);
 
         return $routeParams[1];
     }
 
+    /**
+     * Get the parameter details.
+     *
+     * @param DocBlock $docBlock The doc block.
+     *
+     * @return array
+     */
     private function getParameterDetails(DocBlock $docBlock): array
     {
         $parameterDetails = [];
@@ -301,9 +329,8 @@ class RouteDescriber
 
         $returnResponse = $this->getReturnResponse($method);
         $exceptionResponses = $this->getExceptionResponses($method);
-        $responses = $returnResponse + $exceptionResponses;
 
-        return $responses;
+        return $returnResponse + $exceptionResponses;
     }
 
     /**
@@ -322,8 +349,14 @@ class RouteDescriber
         $class = $method->getReturnType()->getName();
         $oasRef = explode('\\', $method->getReturnType()->getName());
 
+        try {
+            $httpCode = $class::HTTP_CODE;
+        } catch (\Throwable $exception) {
+            $httpCode = 'default';
+        }
+
         return [
-            $class::HTTP_CODE => [
+            $httpCode => [
                 '$ref' => '#/components/responses/' . end($oasRef),
             ],
         ];
