@@ -27,6 +27,8 @@ class RouteDescriber
 
     private const DEFAULT_EXCEPTION_CODE = 500;
 
+    private const DEFAULT_RESPONSE_TYPE = 'application/json';
+
     /**
      * The ignored routes.
      *
@@ -65,6 +67,8 @@ class RouteDescriber
      */
     public function describe(array $oas): array
     {
+        unset($oas['paths']['/removeme']);
+
         $this->parseRoutes();
 
         $oas['paths'] += $this->parseRoutes();
@@ -91,6 +95,10 @@ class RouteDescriber
                 continue;
             }
 
+            if ($this->getController($route) !== 'App\Controller\RecruitmentController') {
+                continue;
+            }
+
             $docBlock = $this->getRouteDocBlock($route);
             $routeDetails = $this->getRouteDetails($docBlock);
             foreach ($route->getMethods() as $httpMethod) {
@@ -100,7 +108,7 @@ class RouteDescriber
                         'description' => $routeDetails['description'],
                         'summary' => $routeDetails['summary'],
                         'operationId' => $this->getMethod($route),
-                        'parameters' => [],
+                        'parameters' => $this->getRouteParameters($route, $docBlock, $httpMethod),
                         'responses' => $this->getResponses($route),
                     ],
                 ];
@@ -231,9 +239,48 @@ class RouteDescriber
         ];
     }
 
-    private function getRouteParameters()
+    private function getRouteParameters(Route $route, DocBlock $docBlock, string $httpMethod)
     {
-        // things
+        $pathParameters = $this->getPathParameters($route->getPath());
+        $parameterDetails = $this->getParameterDetails($docBlock);
+        $reflectionMethod = new \ReflectionMethod($this->getController($route), $this->getMethod($route));
+        $reflectionParameters = $reflectionMethod->getParameters();
+
+        $parameters = [];
+        foreach($reflectionParameters as $reflectionParameter) {
+            if (\in_array($reflectionParameter->getName(), $pathParameters, true) === true) {
+
+                $parameters[] = [
+                    'name' => $reflectionParameter->getName(),
+                    'in' => 'path',
+                    'description' => $parameterDetails[$reflectionParameter->getName()]['description'],
+                    'required' => $reflectionParameter->allowsNull() === false ? '' : 'true',
+                    'schema' => [],
+                ];
+            }
+        }
+
+        return $parameters;
+    }
+
+    private function getPathParameters(string $path): array
+    {
+        preg_match_all("/\{([^}]+)\}/", $path, $routeParams);
+
+        return $routeParams[1];
+    }
+
+    private function getParameterDetails(DocBlock $docBlock): array
+    {
+        $parameterDetails = [];
+        /** @var DocBlock\Tags\Param $param */
+        foreach ($docBlock->getTagsByName('param') as $param) {
+            $parameterDetails[$param->getVariableName()] = [
+                'description' => $param->getDescription()->render(),
+            ];
+        }
+
+        return $parameterDetails;
     }
 
     /**
@@ -273,12 +320,10 @@ class RouteDescriber
         }
 
         $class = $method->getReturnType()->getName();
-        // @todo dingen
-        $httpCode = \defined("$class . ::HTTP_CODE") === true ? "$class . ::HTTP_CODE" : 'default';
         $oasRef = explode('\\', $method->getReturnType()->getName());
 
         return [
-            $httpCode => [
+            $class::HTTP_CODE => [
                 '$ref' => '#/components/responses/' . end($oasRef),
             ],
         ];
@@ -312,7 +357,17 @@ class RouteDescriber
             $exceptionClass = $exceptionType->getFqsen()->__toString();
             $exceptionName = $exceptionType->getFqsen()->getName();
             $exceptionCode = $this->getExcetionCode($exceptionClass);
-            $responses[$exceptionCode] = ['$ref' => '#/components/responses/' . $exceptionName];
+
+            $responses[$exceptionCode] = [
+                'description' => $exception->__toString(),
+                'content' => [
+                    self::DEFAULT_RESPONSE_TYPE => [
+                        'schema' => [
+                            '$ref' => '#/components/schemas/' . $exceptionName,
+                        ],
+                    ],
+                ],
+            ];
         }
 
         return $responses;

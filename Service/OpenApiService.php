@@ -11,12 +11,11 @@
 namespace SRedbull\ApiDocBundle\Service;
 
 use SRedbull\ApiDocBundle\Describer\RouteDescriber;
-use SRedbull\ApiDocBundle\OpenApi\Exception\InvalidOpenApiSpecificationException;
+use SRedbull\ApiDocBundle\Exception\InvalidOpenApiSpecificationException;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Routing\RouterInterface;
 
 /**
  * Class OpenApiService

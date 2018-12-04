@@ -12,7 +12,5 @@
 use OpenApi\Annotations as OA;
 
 /**
- * @OA\PathItem(
- *     path="null"
- * )
+ * @OA\PathItem(path="/removeme")
  */
