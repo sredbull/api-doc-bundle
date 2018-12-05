@@ -108,15 +108,13 @@ class RouteDescriber
             $docBlock = $this->getRouteDocBlock($route);
             $routeDetails = $this->getRouteDetails($docBlock);
             foreach ($route->getMethods() as $httpMethod) {
-                $routes[$route->getPath()] = [
-                    strtolower($httpMethod) => [
-                        'tags' => [$this->getTag($route)],
-                        'description' => $routeDetails['description'],
-                        'summary' => $routeDetails['summary'],
-                        'operationId' => $this->getMethod($route),
-                        'parameters' => $this->getRouteParameters($route, $docBlock),
-                        'responses' => $this->getResponses($route),
-                    ],
+                $routes[$route->getPath()][strtolower($httpMethod)] = [
+                    'tags' => [$this->getTag($route)],
+                    'description' => $routeDetails['description'],
+                    'summary' => $routeDetails['summary'],
+                    'operationId' => $this->getMethod($route),
+                    'parameters' => $this->getRouteParameters($route, $docBlock),
+                    'responses' => $this->getResponses($route),
                 ];
             }
         }
