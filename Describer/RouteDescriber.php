@@ -93,17 +93,17 @@ class RouteDescriber
      */
     public function parseRoutes(): array
     {
-        $routeColelction = $this->getRouteCollection()->getIterator();
+        $routeCollection = $this->getRouteCollection()->getIterator();
 
         $routes = [];
-        foreach ($routeColelction as $route) {
+        foreach ($routeCollection as $route) {
             if ($this->isRouteIgnored($route) === true ) {
                 continue;
             }
 
-//            if ($this->getController($route) !== 'App\Controller\RecruitmentController') {
-//                continue;
-//            }
+            if ($this->getController($route) !== 'App\Controller\LoginController') {
+                continue;
+            }
 
             $docBlock = $this->getRouteDocBlock($route);
             $routeDetails = $this->getRouteDetails($docBlock);
@@ -116,6 +116,10 @@ class RouteDescriber
                     'parameters' => $this->getRouteParameters($route, $docBlock),
                     'responses' => $this->getResponses($route),
                 ];
+
+                if ($httpMethod === 'POST') {
+                    $routes[$route->getPath()][strtolower($httpMethod)]['requestBody'] = $this->getRequestBody($route, $docBlock);
+                }
             }
         }
 
@@ -332,6 +336,44 @@ class RouteDescriber
     }
 
     /**
+     * Get the request body.
+     *
+     * @param Route    $route    The route.
+     * @param DocBlock $docBlock The docblock.
+     *
+     * @return array
+     *
+     * @throws \ReflectionException When the method could not be reflected.
+     */
+    private function getRequestBody(Route $route, DocBlock $docBlock): array
+    {
+        $parameterDetails = $this->getParameterDetails($docBlock);
+        $reflectionMethod = new \ReflectionMethod($this->getController($route), $this->getMethod($route));
+        $reflectionParameters = $reflectionMethod->getParameters();
+
+        $requestBody = [];
+        foreach($reflectionParameters as $reflectionParameter) {
+            if ($reflectionParameter->getName() !== 'request') {
+                continue;
+            }
+
+            $requestBody = [
+                'description' => $parameterDetails['request']['description'],
+                'required' => true,
+                'content' => [
+                    self::DEFAULT_RESPONSE_TYPE => [
+                        'schema' => [
+                            '$ref' => '#/components/schemas/' . $reflectionParameter->getClass()->getShortName(),
+                        ],
+                    ],
+                ],
+            ];
+        }
+
+        return $requestBody;
+    }
+
+    /**
      * Get the return response.
      *
      * @param \ReflectionMethod $method The method.
@@ -366,8 +408,6 @@ class RouteDescriber
      * @param \ReflectionMethod $method The method.
      *
      * @return array
-     *
-     * @throws \ReflectionException When the exception code could not parsed.
      */
     private function getExceptionResponses(\ReflectionMethod $method): array
     {
@@ -387,7 +427,7 @@ class RouteDescriber
             $exceptionType = $exception->getType();
             $exceptionClass = $exceptionType->getFqsen()->__toString();
             $exceptionName = $exceptionType->getFqsen()->getName();
-            $exceptionCode = $this->getExcetionCode($exceptionClass);
+            $exceptionCode = $this->getExceptionCode($exceptionClass);
 
             $responses[$exceptionCode] = [
                 'description' => $exception->__toString(),
@@ -413,17 +453,17 @@ class RouteDescriber
      *
      * @throws \ReflectionException When the class could not be reflected.
      */
-    private function getExcetionCode(string $class): int
+    private function getExceptionCode(string $class): int
     {
         $code = self::DEFAULT_EXCEPTION_CODE;
         $reflectionCLass = new \ReflectionClass($class);
-        $reflectionParmaters = $reflectionCLass->getConstructor()->getParameters();
-        foreach($reflectionParmaters as $reflectionParmater) {
-            if ($reflectionParmater->getName() !== 'code') {
+        $reflectionParameters = $reflectionCLass->getConstructor()->getParameters();
+        foreach($reflectionParameters as $reflectionParameter) {
+            if ($reflectionParameter->getName() !== 'code') {
                 continue;
             }
 
-            $code = $reflectionParmater->getDefaultValue();
+            $code = $reflectionParameter->getDefaultValue();
         }
 
         return $code;
