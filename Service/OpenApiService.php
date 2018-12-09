@@ -68,7 +68,7 @@ class OpenApiService
 
         $output = new BufferedOutput();
 
-         try {
+        try {
             $application->run($input, $output);
 
             $oas = \json_decode($output->fetch(), true);

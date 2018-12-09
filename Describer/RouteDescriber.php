@@ -102,7 +102,7 @@ class RouteDescriber
             }
 
             if ($this->getController($route) !== 'App\Controller\LoginController') {
-                continue;
+                // continue;
             }
 
             $docBlock = $this->getRouteDocBlock($route);
